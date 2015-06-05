@@ -10,14 +10,14 @@ namespace BeehiveManagementSystem
     {
         //Declare Fields
 
-        public static Worker[] workers { get; set; }
-        private static int shiftNumber { get; set; }
+        private Worker[] workers;
+        private int shiftNumber = 0;
 
         //Setup Object Constructor 
 
-        public Queen(Worker[] Workers)
+        public Queen(Worker[] workers)
         {
-            workers = Workers; 
+            this.workers = workers; 
         }
 
         //Declare Methods
@@ -42,7 +42,7 @@ namespace BeehiveManagementSystem
 // Hooks into the forms "work the next shift button". Tells each worker object to work one shift
 // and then checks the status so that it can add a line to the shift report. 
       
-        public static string WorkTheNextShift()
+        public string WorkTheNextShift()
         {
  
             shiftNumber++;
@@ -52,25 +52,30 @@ namespace BeehiveManagementSystem
             foreach (Worker bee in workers)
             {
                 int index = Array.IndexOf(workers, bee);
-                bee.DidYouFinish(bee);
-                if (bee.DidYouFinish(bee) == false)
-                {
-                    // update status report that bee is still working
-                    // and how many shifts are left. Include which bee
-                    // it is we are referencing
-                   
-                   report += String.Format("Worker# {0} will be done with {1} after {2} shifts \r\n ", index, bee.CurrentJob, bee.ShiftsLeft);
-                 
-                }
-                if(bee.DidYouFinish(bee) == true)
+              //  bee.DidYouFinish(bee); This line is unnecessary. Everytime bee.DidYouFinish(bee) 
+              //  checked the method is run. Putting it here increments the shiftsWorked field twice
+                
+                if(bee.DidYouFinish(bee))
                 {
                     // update status report that bee# is finished jobname
                     // and is ready for next job.
-                    report += String.Format("Worker#{0} is finished the job \r\n " +
-                        "Worker#{0} is not working \r\n ", index);
+                    report += String.Format("Worker#{0} is finished the job \r\n " , index);
                     
                    // string noJob = String.Format("Worker#{0} is not working", index);
                 }
+                    if (String.IsNullOrEmpty(bee.CurrentJob))
+                    {
+                        report += String.Format("Worker#{0} is not working \r\n ", index);
+                    }
+                else
+                    if(bee.ShiftsLeft > 0)
+                    {
+                        report += String.Format("Worker#{0} is doing {1} for {2} more shifts \r\n", index, bee.CurrentJob, bee.ShiftsLeft);
+                    }
+                        else
+                    {
+                        report += String.Format("Worker #{0} will be done with {1} after this shift \r\n", index, bee.CurrentJob);
+                    }
             }
             return report;
         }
@@ -80,20 +85,19 @@ namespace BeehiveManagementSystem
    public class Worker
      {
          //Declare Backing Fields
-         private string currentJob;
-         private int shiftsLeft;
+       private string currentJob = "";
+       //  private int shiftsLeft; No backing field for this property
          private int shiftsToWork;
          private int shiftsWorked;
          private string[] jobsICanDo;
 
         //Declare Public Properties    
          public string CurrentJob { get { return currentJob; } }
-         
-        public int ShiftsLeft { get {return shiftsLeft; } }
+
+         public int ShiftsLeft { get { return shiftsToWork - shiftsWorked; } }
 
         public int ShiftsToWork { get { return shiftsToWork; }}
 
-        public int ShiftsWorked { get; set; }
        
       //Setup Object Constructor
 
@@ -131,22 +135,25 @@ namespace BeehiveManagementSystem
                 return false; 
             }
 
-       // Worker works a shift and then checks to see if it has any shifts
-       // left to work. If it does not, it sets currentJob to null so it 
-       // can accept the next job. Otherwise it returns false so it can 
-       // continue working.
+
 
         public bool DidYouFinish(Worker workers)
         {
-            shiftsToWork--;
-            if (shiftsToWork == 0)
+            if (string.IsNullOrEmpty(currentJob))
+                return false;
+                shiftsWorked++;
+            
+            if (shiftsWorked > shiftsToWork)
             {
+                shiftsToWork = 0;
+                shiftsWorked = 0;
                 currentJob = null;
                 return true;
             }
             else
-                return false;
-        } 
+            return false;
+        }
+
         }
        
     }     
