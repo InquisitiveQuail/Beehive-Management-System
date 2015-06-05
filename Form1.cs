@@ -18,12 +18,12 @@ namespace BeehiveManagementSystem
             InitializeComponent();
             workerBeeJob.SelectedIndex = 0;
             Worker[] workers = new Worker[4];
-            workers[0] = new Worker(new string[] { "Nectar Collector", "Honey Manufacturing" });
-            workers[1] = new Worker(new string[] { "Egg Care", "Baby Bee Tutoring" });
-            workers[2] = new Worker(new string[] { "Nectar Collector", "Honey Manufacturing" });
+            workers[0] = new Worker(new string[] { "Nectar Collector", "Honey Manufacturing" }, 175);
+            workers[1] = new Worker(new string[] { "Egg Care", "Baby Bee Tutoring" }, 114);
+            workers[2] = new Worker(new string[] { "Nectar Collector", "Honey Manufacturing" }, 149);
             workers[3] = new Worker(new string[] { "Nectar Collector", "Honey Manufacturing", 
-                         "Egg Care", "Baby Bee Tutoring", "Hive Maintenance", "Sting Patrol" });
-           queen = new Queen(workers);
+                         "Egg Care", "Baby Bee Tutoring", "Hive Maintenance", "Sting Patrol" }, 155);
+           queen = new Queen(workers, 275);
         }
 
         private void assignWork_Click(object sender, EventArgs e)

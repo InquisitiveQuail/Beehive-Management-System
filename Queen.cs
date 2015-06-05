@@ -6,7 +6,26 @@ using System.Threading.Tasks;
 
 namespace BeehiveManagementSystem
 {
-    class Queen
+ public class Bee
+  {
+      public const double HoneyUnitsConsumedPerMg = .25;
+
+      public double WeightMg { get; private set; }
+
+      public Bee (double weightMg)
+      {
+          WeightMg = weightMg;
+      }
+
+      virtual public double HoneyConsumptionRate()
+      {
+          return WeightMg * HoneyUnitsConsumedPerMg;
+      }
+
+  }
+    
+    class Queen : Bee
+       
     {
         //Declare Fields
 
@@ -15,9 +34,10 @@ namespace BeehiveManagementSystem
 
         //Setup Object Constructor 
 
-        public Queen(Worker[] workers)
+        public Queen(Worker[] workers, double weightMg) : base(weightMg) 
         {
             this.workers = workers; 
+            
         }
 
         //Declare Methods
@@ -47,11 +67,16 @@ namespace BeehiveManagementSystem
  
             shiftNumber++;
              string report;
-
+             double honeyConsumed = HoneyConsumptionRate();
+            
             report = String.Format("Report for shift# {0} \r\n " , shiftNumber);
             foreach (Worker bee in workers)
             {
                 int index = Array.IndexOf(workers, bee);
+                double workerHoneyConsumed = bee.HoneyConsumptionRate();
+                honeyConsumed += workerHoneyConsumed;
+                
+                
               //  bee.DidYouFinish(bee); This line is unnecessary. Everytime bee.DidYouFinish(bee) 
               //  checked the method is run. Putting it here increments the shiftsWorked field twice
                 
@@ -61,7 +86,6 @@ namespace BeehiveManagementSystem
                     // and is ready for next job.
                     report += String.Format("Worker#{0} is finished the job \r\n " , index);
                     
-                   // string noJob = String.Format("Worker#{0} is not working", index);
                 }
                     if (String.IsNullOrEmpty(bee.CurrentJob))
                     {
@@ -77,16 +101,38 @@ namespace BeehiveManagementSystem
                         report += String.Format("Worker #{0} will be done with {1} after this shift \r\n", index, bee.CurrentJob);
                     }
             }
+            report += String.Format("Total Honey Consumed for the shift: {0} units \r\n", honeyConsumed);
+
             return report;
         }
         //Remember typical naming convention for private field is _private 
     }
 
-   public class Worker
+    //Create Interfaces for two jobs. Sting Patrol and Nectar Collector. Remember to begin interface names with 'I'
+    // Interfaces do not contain any fields. They only contain methods and properties. The specific code is not included
+    // in the interface and must be specifically implemented by the class.
+    // Interfaces allow us to define methods and properties a class must have. It may be cumbersome to add those directly
+    // into the class and may also be unwanted. A class can only inherit from one class.
+    // We can add as many interfaces as we want to a class. 
+
+    interface IStingPatrol
+    {
+        public int AlertLevel { get; }
+        public int StingerLength { get; set; }
+        public bool LookForEnemies();
+        public int SharpenStinger();
+    }
+
+    interface INectarCollector
+    {
+        void FindFlowers();
+        void GatherNectar();
+        void ReturnToHive();
+    }
+   public class Worker : Bee
      {
          //Declare Backing Fields
-       private string currentJob = "";
-       //  private int shiftsLeft; No backing field for this property
+         private string currentJob = "";
          private int shiftsToWork;
          private int shiftsWorked;
          private string[] jobsICanDo;
@@ -101,7 +147,7 @@ namespace BeehiveManagementSystem
        
       //Setup Object Constructor
 
-        public Worker(string[] JobsICanDo)
+        public Worker(string[] JobsICanDo, double weightMg) : base(weightMg)
         {
             this.jobsICanDo = JobsICanDo;
         }
@@ -117,6 +163,15 @@ namespace BeehiveManagementSystem
        // to the value of the job parameter. It resets shiftsWorked to 
        // zero. Then it returns true.
 
+        public override double HoneyConsumptionRate()
+        {
+
+            const double honeyUnitsPerShiftWorked = .65;
+           double baseHoneyConsumptionRate = base.HoneyConsumptionRate();
+
+            baseHoneyConsumptionRate += shiftsWorked * honeyUnitsPerShiftWorked;
+            return baseHoneyConsumptionRate;
+        }
 
         public bool DoThisJob(string job, int numberOfShifts)
         {
@@ -134,8 +189,6 @@ namespace BeehiveManagementSystem
             }
                 return false; 
             }
-
-
 
         public bool DidYouFinish(Worker workers)
         {
